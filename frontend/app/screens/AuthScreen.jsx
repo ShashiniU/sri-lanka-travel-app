@@ -5,6 +5,7 @@ import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'rea
 
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -28,7 +29,14 @@ const AuthScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{isLogin ? 'Login' : 'Register'}</Text>
-
+      {!isLogin && (
+  <TextInput
+    placeholder="Name"
+    style={styles.input}
+    value={name}
+    onChangeText={setName}
+  />
+)}
       <TextInput
         placeholder="Email"
         style={styles.input}
