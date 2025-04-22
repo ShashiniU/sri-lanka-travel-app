@@ -1,0 +1,18 @@
+{
+    "selectLanguage": "Select Language",
+    "chooseYourPreferredLanguage": "Choose your preferred language",
+    "continue": "Continue",
+    "welcomeToApp": "Welcome to Our App",
+    "signIn": "Sign In",
+    "createAccount": "Create Account",
+    "authentication": "Authentication",
+    "currentLanguage": "Current Language",
+    "changeLanguage": "Change Language",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "orSignInWith": "Or sign in with",
+    "dontHaveAccount": "Don't have an account?",
+    "signUp": "Sign Up",
+    "rememberMe": "Remember Me"
+  }
