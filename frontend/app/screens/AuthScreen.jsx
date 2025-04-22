@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../../constants/config'; // Adjust the import path as necessary
 
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,17 +16,54 @@ const AuthScreen = () => {
 
   const toggleMode = () => setIsLogin(!isLogin);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isLogin && password !== confirmPassword) {
-        alert("Passwords do not match!");
-        return;
-      }
-    
+      alert("Passwords do not match!");
+      return;
+    }
+ 
+    try {
       if (isLogin) {
-        console.log('Logging in with:', email, password);
+        // Login request
+        const response = await axios.post(`${BASE_URL}/api/auth/login`, {
+          email,
+          password,
+        });
+  console.log('Login response:', response.data);
+        const { token, user } = response.data;
+  
+        await AsyncStorage.setItem('userToken', token);
+        if (response.data.token) {
+            await AsyncStorage.setItem('token', response.data.token);
+            await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+          }
+        alert(`Welcome back, ${user.name}!`);
+        console.log('Logged in user:', user);
+        
       } else {
-        console.log('Registering with:', email, password, confirmPassword);
+        // Register request
+        console.log('Registering user:', { name, email, password, BASE_URL });
+        const response = await axios.post(`${BASE_URL}/api/auth/register`, {
+          name,
+          email,
+          password,
+        });
+        if (response.data.token) {
+            await AsyncStorage.setItem('token', response.data.token);
+            await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+          }
+        alert('Registration successful! You can now log in.');
+        setIsLogin(true); // switch to login mode after successful registration
       }
+  
+    } catch (error) {
+      if (error.response?.data?.message) {
+        alert(error.response.data.message);
+      } else {
+        alert('An error occurred. Please try again.');
+      }
+      console.error('Auth error:', error);
+    }
   };
 
   return (
