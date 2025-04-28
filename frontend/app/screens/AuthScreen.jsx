@@ -4,7 +4,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import BASE_URL from '../../constants/config'; // Adjust the import path as necessary
+import BASE_URL from '../../constants/config'; 
+import { useNavigation } from '@react-navigation/native';
+
 
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,8 +14,7 @@ const AuthScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
-
+  const navigation = useNavigation();
   const toggleMode = () => setIsLogin(!isLogin);
 
   const handleSubmit = async () => {
@@ -29,7 +30,7 @@ const AuthScreen = () => {
           email,
           password,
         });
-  console.log('Login response:', response.data);
+  console.log('Login response:', response);
         const { token, user } = response.data;
   
         await AsyncStorage.setItem('userToken', token);
@@ -38,7 +39,12 @@ const AuthScreen = () => {
             await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
           }
         alert(`Welcome back, ${user.name}!`);
-        console.log('Logged in user:', user);
+         // 🧠 Here: Check if user is admin
+  if (user.isadmin === 1) {
+    navigation.navigate('AdminHome');  
+  } else {
+    navigation.navigate('UserHome');  
+  }
         
       } else {
         // Register request
@@ -52,6 +58,7 @@ const AuthScreen = () => {
             await AsyncStorage.setItem('token', response.data.token);
             await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
           }
+          console.log('Registration response:', response.data);
         alert('Registration successful! You can now log in.');
         setIsLogin(true); // switch to login mode after successful registration
       }

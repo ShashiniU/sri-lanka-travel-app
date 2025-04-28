@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 
 // Register
 router.post('/register', async (req, res) => {
-  console.log('Register request received:', req.body);
+
   const { name, email, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -36,7 +36,7 @@ router.post('/register', async (req, res) => {
         user: {
           userId: result.insertId,
           name,
-         
+          isadmin: 0,
           email
         }
       });
@@ -48,31 +48,37 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
-  console.log('Login request received:', req.body);
 
   db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+    console.log('Login length:', results.length ); // Debugging line
     if (err || results.length === 0) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    const user = results[0];
+    else{
+      const user = results[0];
+    
     const isMatch = await bcrypt.compare(password, user.password);
+
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
+else{
+  const token = jwt.sign(
+    { id: user.userid, email: user.email },
+    process.env.JWT_SECRET || 'your_jwt_secret',
+    { expiresIn: '1h' } // Token valid for 1 hour
+  );
 
-    const token = jwt.sign(
-        { id: user.userid, email: user.email },
-        process.env.JWT_SECRET || 'your_jwt_secret',
-        { expiresIn: '1h' } // Token valid for 1 hour
-      );
-  
-      res.status(200).json({
-        message: 'Login successful',
-        token,
-        user: { id: user.userid, name: user.name, email: user.email }
-      });
+  res.status(200).json({
+    message: 'Login successful',
+    token,
+    user: { id: user.userid, name: user.name, email: user.email , isadmin: user.is_admin}
+  });
+}
+    }
+ 
   });
 });
 
