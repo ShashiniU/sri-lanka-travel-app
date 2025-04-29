@@ -115,4 +115,33 @@ for (const file of req.files) {
 });
 
 
+// routes/tourism.js
+router.get('/tourism-places', async (req, res) => {
+  try {
+    // Get all tourism places
+    const [places] = await connection.promise().query(`SELECT * FROM tourism_places`);
+
+    const placesWithDetails = await Promise.all(places.map(async (place) => {
+      // Get images
+      const [images] = await connection.promise().query(`SELECT image_url FROM place_images WHERE tourism_place_id = ?`, [place.id]);
+
+      // Get facilities
+      const [facilities] = await connection.promise().query(`SELECT facility_name FROM facilities WHERE tourism_place_id = ?`, [place.id]);
+
+      return {
+        ...place,
+        images: images.map(img => img.image_url),
+        facilities: facilities.map(fac => fac.facility_name),
+      };
+    }));
+console.log(placesWithDetails);
+    res.status(200).json(placesWithDetails);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to fetch tourism places", error: error.message });
+  }
+});
+
+
 module.exports = router;
