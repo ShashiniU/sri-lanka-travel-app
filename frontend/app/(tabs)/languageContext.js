@@ -1,13 +1,13 @@
-// languageContext.js
+// src/context/languageContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as RNLocalize from 'react-native-localize';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { I18nManager } from 'react-native';
 
 // Import language resources
 import en from '../translations/en.json';
+// Uncomment these imports once you have the translation files
 // import es from '../translations/es.json';
 // import fr from '../translations/fr.json';
 // import de from '../translations/de.json';
@@ -32,21 +32,22 @@ export const LANGUAGES = [
   { code: 'ru', name: 'Русский' },
 ];
 
-// Initialize i18n
+// Initialize i18n with only available translations
 i18n
   .use(initReactI18next)
   .init({
     resources: {
       en: { translation: en },
-      es: { translation: es },
-      fr: { translation: fr },
-      de: { translation: de },
-      zh: { translation: zh },
-      ja: { translation: ja },
-      ar: { translation: ar },
-      hi: { translation: hi },
-      pt: { translation: pt },
-      ru: { translation: ru },
+      // Only add these when the translation files are available
+      // es: { translation: es },
+      // fr: { translation: fr },
+      // de: { translation: de },
+      // zh: { translation: zh },
+      // ja: { translation: ja },
+      // ar: { translation: ar },
+      // hi: { translation: hi },
+      // pt: { translation: pt },
+      // ru: { translation: ru },
     },
     fallbackLng: 'en',
     compatibilityJSON: 'v3',
@@ -78,14 +79,8 @@ export const LanguageProvider = ({ children }) => {
           changeLanguage(storedLanguage);
           setIsLanguageSelected(true);
         } else {
-          // Use device locale as the default language
-          const deviceLocale = RNLocalize.getLocales()[0]?.languageCode || 'en';
-          const supportedLanguage = LANGUAGES.find(lang => lang.code === deviceLocale) 
-            ? deviceLocale 
-            : 'en';
-          
-          changeLanguage(supportedLanguage);
-          // Don't set isLanguageSelected to true if using device default
+          // Use English as default without relying on RNLocalize
+          changeLanguage('en');
         }
       } catch (error) {
         console.error('Error initializing language:', error);

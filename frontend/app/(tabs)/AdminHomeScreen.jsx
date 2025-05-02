@@ -1,198 +1,218 @@
-"use client"
-
-import { useState } from "react"
-import { View, Text, StyleSheet, ActivityIndicator, Alert, ScrollView } from "react-native"
-import TourismPlaceForm from "../../components/admin/TourismPlaceForm"
-import UploadImages from "../../components/admin/UploadImages"
-import AddFacilities from "../../components/admin/AddFacilities"
-import BASE_URL from "../../constants/config"; 
-import axios from 'axios';
-
-
+import { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+} from "react-native";
+import TourismPlaceForm from "../../components/admin/TourismPlaceForm";
+import UploadImages from "../../components/admin/UploadImages";
+import AddFacilities from "../../components/admin/AddFacilities";
+import BASE_URL from "../../constants/config";
+import axios from "axios";
 
 export default function AdminHomeScreen() {
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     placeDetails: {},
     images: [],
     facilities: [],
-  })
+  });
 
-  // Handle place details submission from step 1
   const handlePlaceDetailsSubmit = (placeDetails) => {
-    setFormData((prev) => ({ ...prev, placeDetails }))
-    setCurrentStep(2)
-  }
+    setFormData((prev) => ({ ...prev, placeDetails }));
+    setCurrentStep(2);
+  };
 
-  // Handle images submission from step 2
   const handleImagesSubmit = (images) => {
-    setFormData((prev) => ({ ...prev, images }))
-    setCurrentStep(3)
-  }
+    setFormData((prev) => ({ ...prev, images }));
+    setCurrentStep(3);
+  };
 
-  // Handle facilities and final submission from step 3
   const handleFacilitiesSubmit = async (facilities) => {
     try {
-      setIsSubmitting(true)
- 
-      // Update form data with facilities
-      const completeData = {
-        ...formData,
-        facilities,
-      }
+      setIsSubmitting(true);
 
-      // Prepare form data for API submission
-      const apiData = new FormData()
+      const completeData = { ...formData, facilities };
+      const apiData = new FormData();
 
-      // Add place details
       Object.keys(completeData.placeDetails).forEach((key) => {
-        apiData.append(key, completeData.placeDetails[key])
-      })
+        apiData.append(key, completeData.placeDetails[key]);
+      });
+    
 
-      // Add facilities as JSON string
-      apiData.append("facilities", JSON.stringify(facilities))
+      apiData.append("facilities", JSON.stringify(facilities));
+//       apiData.append("latitude", completeData.placeDetails.latitude);
+// apiData.append("longitude", completeData.placeDetails.longitude);
+console.log("FormData:", apiData); // Debugging line
+    
 
-      // Add images
       completeData.images.forEach((imageUri, index) => {
-        const file = {
+        apiData.append("images", {
           uri: imageUri,
           name: `image_${index}.jpg`,
-          type: 'image/jpeg',
-        };
-        
-        apiData.append('images', file);
+          type: "image/jpeg",
+        });
       });
-      
-            //   apiData.append("images", {
-            //     uri: image,
-            //     name: imageName,
-            //     type: imageType,
-            //   })
-            // })
-console.log("Form apiData:", apiData);
-      // Make API call
-      const response = await axios.post(`${BASE_URL}/api/tourism/tourism-places`, apiData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+
+      const response = await axios.post(
+        `${BASE_URL}/api/tourism/tourism-places`,
+        apiData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
-      })
-   
-      // const result = await response.json()
+      );
 
       if (!response.status === 200) {
-        throw new Error("Failed to submit tourism place" || response.message )
+        throw new Error("Failed to submit tourism place");
       }
 
-      // Show success message
-      Alert.alert("Success", "Tourism place added successfully!", [{ text: "OK", onPress: () => resetForm() }])
+      Alert.alert("Success", "Tourism place added successfully!", [
+        { text: "OK", onPress: () => resetForm() },
+      ]);
     } catch (error) {
-      Alert.alert("Error", error.message || "Failed to submit tourism place")
+      Alert.alert("Error", error.message || "Failed to submit tourism place");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  // Reset form after successful submission
   const resetForm = () => {
-    setCurrentStep(1)
+    setCurrentStep(1);
     setFormData({
       placeDetails: {},
       images: [],
       facilities: [],
-    })
-  }
+    });
+  };
 
-  // Render the current step
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <TourismPlaceForm onNext={handlePlaceDetailsSubmit} />
+        return <TourismPlaceForm onNext={handlePlaceDetailsSubmit} />;
       case 2:
-        return <UploadImages onNext={handleImagesSubmit} />
+        return <UploadImages onNext={handleImagesSubmit} />;
       case 3:
-        return <AddFacilities onFinish={handleFacilitiesSubmit} />
+        return <AddFacilities onFinish={handleFacilitiesSubmit} />;
       default:
-        return <Text>Unknown step</Text>
+        return <Text>Unknown step</Text>;
     }
-  }
+  };
 
-  // Show progress indicator
   const renderProgressIndicator = () => {
+    const steps = ["Details", "Images", "Facilities"];
     return (
       <View style={styles.progressContainer}>
-        <View style={[styles.progressStep, currentStep >= 1 && styles.activeStep]} />
-        <View style={styles.progressLine} />
-        <View style={[styles.progressStep, currentStep >= 2 && styles.activeStep]} />
-        <View style={styles.progressLine} />
-        <View style={[styles.progressStep, currentStep >= 3 && styles.activeStep]} />
+        {steps.map((label, index) => {
+          const stepNumber = index + 1;
+          const isActive = currentStep >= stepNumber;
+          return (
+            <View style={styles.stepItem} key={stepNumber}>
+              <View style={[styles.stepCircle, isActive && styles.activeStep]}>
+                <Text style={styles.stepNumber}>{stepNumber}</Text>
+              </View>
+              <Text style={styles.stepLabel}>{label}</Text>
+              {stepNumber < steps.length && (
+                <View style={styles.progressLine} />
+              )}
+            </View>
+          );
+        })}
       </View>
-    )
-  }
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Add Tourism Place</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>🏝️ Add New Tourism Place</Text>
       {renderProgressIndicator()}
 
       {isSubmitting ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0066cc" />
-          <Text style={styles.loadingText}>Submitting tourism place data...</Text>
+          <ActivityIndicator size="large" color="#007bff" />
+          <Text style={styles.loadingText}>Submitting tourism place...</Text>
         </View>
       ) : (
-        <View style={styles.formContainer}>
-        {renderStep()}
-      </View>
+        <View style={styles.card}>{renderStep()}</View>
       )}
-    </View>
-  )
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#eef3f9",
   },
   header: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+    color: "#333",
   },
-  formContainer: {
-    flex: 1,
+  card: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+    marginBottom: 20,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingVertical: 100,
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
+    color: "#555",
   },
   progressContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 20,
+    marginBottom: 30,
+    flexWrap: "wrap",
   },
-  progressStep: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#e0e0e0",
+  stepItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  stepCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#ccc",
     justifyContent: "center",
     alignItems: "center",
   },
   activeStep: {
-    backgroundColor: "#0066cc",
+    backgroundColor: "#007bff",
+  },
+  stepNumber: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  stepLabel: {
+    marginHorizontal: 8,
+    fontSize: 14,
+    color: "#444",
   },
   progressLine: {
-    height: 3,
-    width: 50,
-    backgroundColor: "#e0e0e0",
+    width: 24,
+    height: 2,
+    backgroundColor: "#ccc",
+    marginHorizontal: 4,
   },
-})
+});

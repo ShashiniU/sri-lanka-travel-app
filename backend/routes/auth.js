@@ -50,7 +50,7 @@ router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
   db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
-    console.log('Login length:', results.length ); // Debugging line
+  
     if (err || results.length === 0) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }

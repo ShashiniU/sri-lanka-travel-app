@@ -9,7 +9,7 @@ const upload = multer({ storage: storage });
 
 
 router.post("/tourism-places", upload.array("images"), async (req, res) => {
-
+console.log("Request body:", req.body); // Debugging line
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ message: 'No files uploaded.' });
   }
@@ -29,6 +29,8 @@ router.post("/tourism-places", upload.array("images"), async (req, res) => {
       price_per_night,
       max_guests,
       facilities,
+      latitude,
+      longitude
     } = req.body;
 
     if (!name || !description || !location) {
@@ -41,8 +43,8 @@ router.post("/tourism-places", upload.array("images"), async (req, res) => {
     // Insert into tourism_places table
     const [placeResult] =  await connection.promise().query(
       `INSERT INTO tourism_places
-      (name, description, location, category, language_support, is_rural, eco_friendly, review_count, phone_number, email, website, price_per_night, max_guests, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (name, description, location, category, language_support, is_rural, eco_friendly, review_count, phone_number, email, website, price_per_night, max_guests, created_at,latitude, longitude )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
         description,
@@ -58,11 +60,14 @@ router.post("/tourism-places", upload.array("images"), async (req, res) => {
         price_per_night,
         max_guests,
         created_at,
-      ]
+        latitude,
+
+        longitude]
     );
    
 
     const tourism_place_id = placeResult.insertId;
+    console.log("Tourism place ID:", tourism_place_id); // Debugging line
 
     // Parse facilities JSON
     let facilityList = [];
@@ -134,7 +139,6 @@ router.get('/tourism-places', async (req, res) => {
         facilities: facilities.map(fac => fac.facility_name),
       };
     }));
-console.log(placesWithDetails);
     res.status(200).json(placesWithDetails);
 
   } catch (error) {

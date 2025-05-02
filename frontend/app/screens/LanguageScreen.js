@@ -1,42 +1,44 @@
 // screens/LanguageScreen.js
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Button } from 'react-native';
+import { View, Text, StyleSheet, Button, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
 const LanguageScreen = ({ navigation }) => {
   const [language, setLanguage] = useState('en');
-  const [type, setType] = useState('all');
-  const [filter, setFilter] = useState('');
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sri Lanka Travel App</Text>
-
-      <Text style={styles.label}>Select Language</Text>
-      <Picker selectedValue={language} onValueChange={setLanguage} style={styles.picker}>
-        <Picker.Item label="English" value="en" />
-        <Picker.Item label="Sinhala" value="si" />
-        <Picker.Item label="Tamil" value="ta" />
-      </Picker>
-
-      <Text style={styles.label}>Select Type</Text>
-      <Picker selectedValue={type} onValueChange={setType} style={styles.picker}>
-        <Picker.Item label="All" value="all" />
-        <Picker.Item label="Beach" value="beach" />
-        <Picker.Item label="Temple" value="temple" />
-        <Picker.Item label="Hill Country" value="hill" />
-      </Picker>
-
-      <Text style={styles.label}>Filter by Keyword</Text>
-      <TextInput
-        placeholder="Search..."
-        value={filter}
-        onChangeText={setFilter}
-        style={styles.textInput}
+      <Image
+        source={require('../../assets/images/logo.jpg')} // Add your logo or a related image
+        style={styles.logo}
+        resizeMode="contain"
       />
 
-      <Button title="Continue to Login/Register" onPress={() => navigation.navigate('Auth')} />
+      <Text style={styles.title}>Welcome to</Text>
+      <Text style={styles.subtitle}>Sri Lanka Travel App</Text>
+
+      <Text style={styles.label}>Choose Your Language</Text>
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={language}
+          onValueChange={setLanguage}
+          style={styles.picker}
+          dropdownIconColor="#333"
+        >
+          <Picker.Item label="English" value="en" />
+          <Picker.Item label="සිංහල (Sinhala)" value="si" />
+          <Picker.Item label="தமிழ் (Tamil)" value="ta" />
+        </Picker>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Continue to Login/Register"
+          color="#1E90FF"
+          onPress={() => navigation.navigate('Auth')}
+        />
+      </View>
     </View>
   );
 };
@@ -44,18 +46,50 @@ const LanguageScreen = ({ navigation }) => {
 export default LanguageScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff', justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  label: { marginTop: 10, fontSize: 16 },
-  picker: { height: 50, backgroundColor: '#f0f0f0' },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    height: 50,
-    backgroundColor: '#f9f9f9',
-    marginTop: 5,
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+    padding: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 170,
+    height: 170,
     marginBottom: 20,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#1E90FF',
+    marginBottom: 30,
+  },
+  label: {
+    fontSize: 18,
+    color: '#555',
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+  },
+  pickerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    marginBottom: 50,
+    width: '100%',
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 55,
+    width: '100%',
+  },
+  buttonContainer: {
+    width: '100%',
+    marginTop: 10,
   },
 });
