@@ -1,7 +1,7 @@
 // app/_layout.js
 import React from 'react';
 import { Stack } from 'expo-router';
-import { LanguageProvider } from '../(tabs)/languageContext';
+import { LanguageProvider } from '../screens/languageContext';
 import { useTranslation } from 'react-i18next';
 
 export default function RootLayout() {

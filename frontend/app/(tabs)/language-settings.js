@@ -1,7 +1,7 @@
 // app/(tabs)/language-settings.js
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useLanguage, LANGUAGES } from './languageContext';
+import { useLanguage, LANGUAGES } from '../screens/languageContext';
 
 export default function LanguageSettings() {
   const { currentLanguage, changeLanguage } = useLanguage();

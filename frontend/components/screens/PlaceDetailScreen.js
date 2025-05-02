@@ -9,11 +9,13 @@ import {
   TextInput,
   Modal,
   Platform,
-  Button,
+  Button,Linking 
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
+import MapView, { Marker } from 'react-native-maps';
+
 
 const PlaceDetailScreen = ({ route, navigation }) => {
   const { place } = route.params;
@@ -57,6 +59,18 @@ const PlaceDetailScreen = ({ route, navigation }) => {
           <Text key={index} style={styles.facility}>{facility}</Text>
         ))}
       </View>
+      <TouchableOpacity
+  style={styles.button}
+  onPress={() => {
+    const lat = place.latitude;
+    const lng = place.longitude;
+    const label = encodeURIComponent(place.name);
+    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${label}`;
+    Linking.openURL(url);
+  }}
+>
+  <Text style={styles.buttonText}>View Location on Map</Text>
+</TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={handleBooking}>
         <Text style={styles.buttonText}>Book Now</Text>
