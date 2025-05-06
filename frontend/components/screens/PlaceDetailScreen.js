@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
   TextInput,
   Modal,
   Platform,
-  Button,Linking 
+  Button,
+  Linking 
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -22,21 +23,44 @@ const PlaceDetailScreen = ({ route, navigation }) => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [checkInDate, setCheckInDate] = useState(new Date());
-  const [checkOutDate, setCheckOutDate] = useState(new Date());
+  const [checkOutDate, setCheckOutDate] = useState(new Date(Date.now() + 86400000)); // Set default checkout to tomorrow
   const [showCheckInPicker, setShowCheckInPicker] = useState(false);
   const [showCheckOutPicker, setShowCheckOutPicker] = useState(false);
   const [numPersons, setNumPersons] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [numPersonsText, setNumPersonsText] = useState('1');
 
-  const nights = moment(checkOutDate).diff(moment(checkInDate), 'days');
-  const total = nights > 0 ? nights * place.price_per_night * numPersons : 0;
+
+  // Recalculate total whenever dates or number of persons changes
+  useEffect(() => {
+    calculateTotal();
+  }, [checkInDate, checkOutDate, numPersons]);
+
+  // Separate function to calculate total - can be called directly when needed
+  const calculateTotal = () => {
+    const nights = moment(checkOutDate).diff(moment(checkInDate), 'days');
+    const calculatedTotal = nights > 0 ? nights * place.price_per_night * numPersons : 0;
+    setTotal(calculatedTotal);
+    return calculatedTotal; // Return the calculated value for immediate use
+  };
 
   const handleBooking = () => {
     setModalVisible(true);
   };
 
-  const confirmBooking = () => {
+  const handleNavigateToPayment = () => {
+    // Re-calculate the total just before navigation to ensure it's up to date
+    const currentTotal = calculateTotal();
+    
+    navigation.navigate('Payment', {
+      place,
+      checkInDate,
+      checkOutDate,
+      persons: numPersons,
+      totalAmount: currentTotal, // Use the freshly calculated total
+    });
+    
     setModalVisible(false);
-    alert('Booking Confirmed!');
   };
 
   return (
@@ -60,19 +84,19 @@ const PlaceDetailScreen = ({ route, navigation }) => {
         ))}
       </View>
       <TouchableOpacity
-  style={styles.button}
-  onPress={() => {
-    const lat = place.latitude;
-    const lng = place.longitude;
-    const label = encodeURIComponent(place.name);
-    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${label}`;
-    Linking.openURL(url);
-  }}
->
-  <Text style={styles.buttonText}>View Location on Map</Text>
-</TouchableOpacity>
+        style={styles.button}
+        onPress={() => {
+          const lat = place.latitude;
+          const lng = place.longitude;
+          const label = encodeURIComponent(place.name);
+          const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${label}`;
+          Linking.openURL(url);
+        }}
+      >
+        <Text style={styles.buttonText}>View Location on Map</Text>
+      </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={handleBooking}>
+      <TouchableOpacity style={styles.submitbutton} onPress={handleBooking}>
         <Text style={styles.buttonText}>Book Now</Text>
       </TouchableOpacity>
 
@@ -82,65 +106,82 @@ const PlaceDetailScreen = ({ route, navigation }) => {
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Select Booking Details</Text>
 
-            <TouchableOpacity onPress={() => setShowCheckInPicker(true)}>
-              <Text style={styles.modalText}>
-                Check-in: {moment(checkInDate).format('YYYY-MM-DD')}
-              </Text>
-            </TouchableOpacity>
+            <TouchableOpacity
+  style={styles.dateInput}
+  onPress={() => setShowCheckInPicker(true)}
+>
+  <Text style={styles.dateText}>
+    {checkInDate.toDateString()}
+  </Text>
+</TouchableOpacity>
 
-            <TouchableOpacity onPress={() => setShowCheckOutPicker(true)}>
-              <Text style={styles.modalText}>
-                Check-out: {moment(checkOutDate).format('YYYY-MM-DD')}
-              </Text>
-            </TouchableOpacity>
+{showCheckInPicker && (
+  <DateTimePicker
+    value={checkInDate}
+    mode="date"
+    display="default"
+    onChange={(event, selectedDate) => {
+      setShowCheckInPicker(false);
+      if (selectedDate) {
+        setCheckInDate(selectedDate);
+        if (selectedDate >= checkOutDate) {
+          const newCheckout = new Date(selectedDate.getTime() + 86400000);
+          setCheckOutDate(newCheckout);
+        }
+      }
+    }}
+    minimumDate={new Date()}
+  />
+)}
 
-            {showCheckInPicker && (
-              <DateTimePicker
-                value={checkInDate}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  setShowCheckInPicker(Platform.OS === 'ios');
-                  if (selectedDate) setCheckInDate(selectedDate);
-                }}
-              />
-            )}
+<TouchableOpacity
+  style={styles.dateInput}
+  onPress={() => setShowCheckOutPicker(true)}
+>
+  <Text style={styles.dateText}>
+    {checkOutDate.toDateString()}
+  </Text>
+</TouchableOpacity>
 
-            {showCheckOutPicker && (
-              <DateTimePicker
-                value={checkOutDate}
-                mode="date"
-                display="default"
-                onChange={(event, selectedDate) => {
-                  setShowCheckOutPicker(Platform.OS === 'ios');
-                  if (selectedDate) setCheckOutDate(selectedDate);
-                }}
-              />
-            )}
+{showCheckOutPicker && (
+  <DateTimePicker
+    value={checkOutDate}
+    mode="date"
+    display="default"
+    onChange={(event, selectedDate) => {
+      setShowCheckOutPicker(false);
+      if (selectedDate && selectedDate > checkInDate) {
+        setCheckOutDate(selectedDate);
+      } else if (selectedDate) {
+        Alert.alert('Invalid Date', 'Check-out date must be after check-in date');
+      }
+    }}
+    minimumDate={new Date(checkInDate.getTime() + 86400000)}
+  />
+)}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Number of Persons"
-              keyboardType="numeric"
-              value={numPersons.toString()}
-              onChangeText={(text) => setNumPersons(parseInt(text) || 1)}
-            />
+          {/* //commit */}
+<TextInput
+  style={styles.input}
+  placeholder="Number of Persons"
+  keyboardType="numeric"
+  value={numPersonsText}
+  onChangeText={(text) => {
+    // Allow only numbers or empty input
+    if (/^\d*$/.test(text)) {
+      setNumPersonsText(text);
+      const parsed = parseInt(text);
+      setNumPersons(parsed > 0 ? parsed : 1); // Still keep total updated
+    }
+  }}
+/>
 
             <Text style={styles.totalAmount}>Total: ${total.toFixed(2)}</Text>
 
             <TouchableOpacity
-  style={styles.button}
-  onPress={() =>
-    navigation.navigate('Payment', {
-        place,
-        checkInDate,
-        checkOutDate,
-        persons: numPersons,
-        totalAmount: total,
-      })
-      
-  }
->
+              style={styles.button}
+              onPress={handleNavigateToPayment}
+            >
               <Text style={styles.buttonText}>Confirm Booking</Text>
             </TouchableOpacity>
 
@@ -153,26 +194,147 @@ const PlaceDetailScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  swiperContainer: { height: 250 },
-  image: { width: '100%', height: 250 },
-  title: { fontSize: 24, fontWeight: 'bold', padding: 10 },
-  price: { fontSize: 20, color: '#00BFA6', paddingHorizontal: 10 },
-  description: { fontSize: 16, padding: 10, color: '#555' },
-  facilitiesTitle: { fontSize: 20, fontWeight: 'bold', paddingHorizontal: 10, marginTop: 20 },
-  facilities: { flexDirection: 'row', flexWrap: 'wrap', padding: 10 },
-  facility: { backgroundColor: '#E0F7FA', padding: 6, margin: 4, borderRadius: 8 },
-  button: { backgroundColor: '#00BFA6', padding: 15, borderRadius: 10, margin: 20, alignItems: 'center' },
-  buttonText: { color: '#fff', fontSize: 18 },
-
-  // Modal styles
-  modalBackground: { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalContainer: { margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20, elevation: 10 },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 15 },
-  modalText: { fontSize: 16, marginVertical: 8 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 10, marginVertical: 10 },
-  totalAmount: { fontSize: 18, fontWeight: 'bold', marginTop: 10, marginBottom: 15 },
-  confirmButton: { backgroundColor: '#00BFA6', padding: 15, borderRadius: 10, alignItems: 'center' },
+  container: {
+    flex: 1,
+    backgroundColor: '#F9FAFB',
+  },
+  swiperContainer: {
+    height: 260,
+  },
+  image: {
+    width: '100%',
+    height: 260,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#111827',
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
+  price: {
+    fontSize: 22,
+    color: '#10B981',
+    paddingHorizontal: 20,
+    marginTop: 6,
+    fontWeight: '600',
+  },
+  description: {
+    fontSize: 16,
+    color: '#4B5563',
+    paddingHorizontal: 20,
+    marginTop: 12,
+    lineHeight: 24,
+  },
+  facilitiesTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    paddingHorizontal: 20,
+    marginTop: 28,
+    marginBottom: 12,
+    color: '#1F2937',
+  },
+  facilities: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+  },
+  facility: {
+    backgroundColor: '#D1FAE5',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    margin: 6,
+    borderRadius: 16,
+    fontSize: 14,
+    color: '#065F46',
+    elevation: 1,
+  },
+  button: {
+    backgroundColor: '#10B981',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    marginHorizontal: 70,
+    marginVertical: 17,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+   
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  submitbutton: {
+    backgroundColor: '#1E90FF',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 5,
+    marginHorizontal: 40,
+    elevation: 6,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalContainer: {
+    margin: 30,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    elevation: 12,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 18,
+    color: '#111827',
+    textAlign: 'center',
+  },
+  modalText: {
+    fontSize: 16,
+    marginVertical: 10,
+    color: '#374151',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 10,
+    padding: 12,
+    marginVertical: 12,
+    fontSize: 16,
+    color: '#111827',
+  },
+  totalAmount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 16,
+    marginBottom: 24,
+    color: '#10B981',
+    textAlign: 'center',
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 8,
+    backgroundColor: '#fff',
+  },
+  
+  dateText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  
 });
 
 export default PlaceDetailScreen;

@@ -3,6 +3,7 @@ const router = express.Router();
 const connection = require('../db');  // Your connection pool
 const multer = require('multer');
 
+
 // Multer config for handling multipart/form-data
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -144,6 +145,77 @@ router.get('/tourism-places', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to fetch tourism places", error: error.message });
+  }
+});
+
+
+// Create a new booking
+router.post('/bookings', async (req, res) => {
+  console.log("Booking request body:", req.body); // Debugging line
+  const {
+    userid,         // Logged-in user ID
+    location,     // Location ID for tourism place
+    checkin,        // Check-in date
+    checkout,       // Check-out date
+    noofpersons,    // Number of persons
+    paid_amount,    // Amount paid for the booking
+    payment_type,   // Payment method (e.g., card, PayPal, etc.)
+  } = req.body;
+
+const created_at = new Date();  // Get the current date/time when the booking is created
+  console.log("Booking creation time:", created_at); // Debugging line
+  try {
+    // Insert into bookings table
+    const [bookingResult] = await connection.promise().query(
+      `INSERT INTO bookings
+      (userid, locationid, checkin, checkout, noofpersons, paid_amount, payment_type)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        userid,       // Logged-in user ID
+        location,   // Location ID
+        checkin,      // Check-in date
+        checkout,     // Check-out date
+        noofpersons,  // Number of persons
+        paid_amount,  // Amount paid
+        payment_type
+        
+      ]
+    );
+    console.log("Booking result:", bookingResult); // Debugging line
+    // Return success response
+    res.status(201).json({
+      message: 'Booking successfully created',
+    
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+
+router.get('/recommended-places', async (req, res) => {
+  try {
+    const [results] = await connection.promise().query(`
+      SELECT tp.*, GROUP_CONCAT(tpi.image_url) AS images
+      FROM bookings b
+      JOIN tourism_places tp ON b.locationid = tp.id
+      LEFT JOIN place_images tpi ON tp.id = tpi.tourism_place_id
+      GROUP BY tp.id
+      ORDER BY COUNT(b.bookingid) DESC
+      LIMIT 5;
+    `);
+
+    // Convert image CSV to array
+    const data = results.map(row => ({
+      ...row,
+      images: row.images ? row.images.split(',') : [],
+    }));
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching recommended places' });
   }
 });
 

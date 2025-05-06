@@ -57,6 +57,8 @@ export default function TourismPlaceForm({ onNext }: { onNext: (data: any) => vo
               placeholder={field.placeholder}
               onChangeText={onChange}
               value={value}
+              multiline={true}
+              numberOfLines={7} // Adjust height with this or via styles
               style={{
                 borderWidth: 1,
                 borderColor: '#ccc',

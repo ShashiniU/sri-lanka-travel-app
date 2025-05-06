@@ -27,8 +27,9 @@ const LanguageScreen = ({ navigation }) => {
           dropdownIconColor="#333"
         >
           <Picker.Item label="English" value="en" />
-          <Picker.Item label="සිංහල (Sinhala)" value="si" />
-          <Picker.Item label="தமிழ் (Tamil)" value="ta" />
+          <Picker.Item label="Français (French)" value="fr" />
+<Picker.Item label="Deutsch (German)" value="de" />
+
         </Picker>
       </View>
 
