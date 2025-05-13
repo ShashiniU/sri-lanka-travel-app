@@ -7,29 +7,14 @@ import { I18nManager } from 'react-native';
 
 // Import language resources
 import en from '../translations/en.json';
-// Uncomment these imports once you have the translation files
-// import es from '../translations/es.json';
-// import fr from '../translations/fr.json';
-// import de from '../translations/de.json';
-// import zh from '../translations/zh.json';
-// import ja from '../translations/ja.json';
-// import ar from '../translations/ar.json';
-// import hi from '../translations/hi.json';
-// import pt from '../translations/pt.json';
-// import ru from '../translations/ru.json';
+
 
 // Available languages
 export const LANGUAGES = [
   { code: 'en', name: 'English' },
-  { code: 'es', name: 'Español' },
   { code: 'fr', name: 'Français' },
   { code: 'de', name: 'Deutsch' },
-  { code: 'zh', name: '中文' },
-  { code: 'ja', name: '日本語' },
-  { code: 'ar', name: 'العربية' },
-  { code: 'hi', name: 'हिन्दी' },
-  { code: 'pt', name: 'Português' },
-  { code: 'ru', name: 'Русский' },
+ 
 ];
 
 // Initialize i18n with only available translations

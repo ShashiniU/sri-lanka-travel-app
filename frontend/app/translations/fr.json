@@ -1,0 +1,15 @@
+{
+    "welcome": "Bienvenue à",
+    "appName": "Application de Voyage au Sri Lanka",
+    "chooseLanguage": "Choisissez votre langue",
+    "continue": "Continuer vers Connexion/Inscription",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "name": "Nom",
+    "confirmPassword": "Confirmer le mot de passe",
+    "toggleLogin": "Vous avez déjà un compte ? Connectez-vous",
+    "toggleRegister": "Pas encore de compte ? Inscrivez-vous"
+  }
+  
