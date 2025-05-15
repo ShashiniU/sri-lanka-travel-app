@@ -7,11 +7,7 @@ import i18n from '../translations/i18n'; // Adjust path if needed
 const LanguageScreen = ({ navigation }) => {
   const [language, setLanguage] = useState('en');
   const { t } = useTranslation();
-  console.log('Current language:', i18n.language); // Debugging line
-  console.log('Available languages:', i18n.options.resources); // Debugging line
-console.log('t', t); // Debugging line
-
-console.log('t("welcome")', t('welcome')); // Debugging line
+  
   const handleLanguageChange = (lang) => {
     setLanguage(lang);
     i18n.changeLanguage(lang);
@@ -82,6 +78,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 28,
+    textAlign: 'center',
     fontWeight: 'bold',
     color: '#1E90FF',
     marginBottom: 30,

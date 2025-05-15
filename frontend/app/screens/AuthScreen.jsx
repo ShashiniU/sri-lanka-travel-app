@@ -15,6 +15,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../../constants/config';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
+
 
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -24,6 +26,7 @@ const AuthScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigation = useNavigation();
   const toggleMode = () => setIsLogin(!isLogin);
+  const { t } = useTranslation();
 
   const handleSubmit = async () => {
     if (!isLogin && password !== confirmPassword) {
@@ -73,28 +76,28 @@ const AuthScreen = () => {
     }
   };
 
-  return (
+   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.select({ ios: 'padding', android: undefined })}
     >
       <View style={styles.card}>
         <Image
-          source={require('../../assets/images/logo.jpg')} // Add a relevant icon
+          source={require('../../assets/images/logo.jpg')}
           style={styles.logo}
         />
-        <Text style={styles.title}>{isLogin ? 'Login' : 'Register'}</Text>
+        <Text style={styles.title}>{isLogin ? t('login') : t('register')}</Text>
 
         {!isLogin && (
           <TextInput
-            placeholder="Name"
+            placeholder={t('name')}
             style={styles.input}
             value={name}
             onChangeText={setName}
           />
         )}
         <TextInput
-          placeholder="Email"
+          placeholder={t('email')}
           style={styles.input}
           autoCapitalize="none"
           keyboardType="email-address"
@@ -103,7 +106,7 @@ const AuthScreen = () => {
         />
 
         <TextInput
-          placeholder="Password"
+          placeholder={t('password')}
           style={styles.input}
           secureTextEntry
           value={password}
@@ -112,7 +115,7 @@ const AuthScreen = () => {
 
         {!isLogin && (
           <TextInput
-            placeholder="Confirm Password"
+            placeholder={t('confirmPassword')}
             style={styles.input}
             secureTextEntry
             value={confirmPassword}
@@ -122,15 +125,15 @@ const AuthScreen = () => {
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.buttonText}>
-            {isLogin ? 'Login' : 'Register'}
+            {isLogin ? t('login') : t('register')}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={toggleMode}>
           <Text style={styles.toggle}>
             {isLogin
-              ? "Don't have an account? Register"
-              : 'Already have an account? Login'}
+              ? t('dontHaveAccount')
+              : t('alreadyHaveAccount')}
           </Text>
         </TouchableOpacity>
       </View>

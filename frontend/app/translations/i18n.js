@@ -6,9 +6,10 @@ import { initReactI18next } from 'react-i18next';
 import en from './en.json';
 import fr from './fr.json';
 import de from './de.json';
+
 // Initialize i18next
 i18n
-  .use(initReactI18next) // passes i18n down to react-i18next
+  .use(initReactI18next)
   .init({
     compatibilityJSON: 'v3',
     lng: 'en', // default language
@@ -17,6 +18,9 @@ i18n
       en: { translation: en },
       fr: { translation: fr },
       de: { translation: de },
+    },
+    react: {
+      useSuspense: false,
     },
     interpolation: {
       escapeValue: false, // react already safes from xss
